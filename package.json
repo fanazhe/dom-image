@@ -1,6 +1,6 @@
 {
   "name": "dom-image",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Generates an image from a DOM node using HTML5 canvas and SVG",
   "main": "src/dom-to-image.js",
   "dependencies": {},
@@ -43,5 +43,6 @@
   "bugs": {
     "url": "https://github.com/fanazhe/dom-image/issues"
   },
-  "homepage": "https://github.com/fanazhe/dom-image#readme"
+  "homepage": "https://github.com/fanazhe/dom-image#readme",
+  "readme": "Use README.md"
 }
