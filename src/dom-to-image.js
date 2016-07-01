@@ -45,6 +45,26 @@
             .then(function (node) {
                 return cloneNode(node, options.filter, true);
             })
+            .then(function (cloneNode) {
+                function getFontFamily(node) {
+                    var fontFamilies = [window.getComputedStyle(node).getPropertyValue('font-family')];
+                    util.asArray(node.childNodes).forEach(function (child) {
+                        if (child instanceof Element) {
+                            getFontFamily(child).forEach(function (fontFamily) {
+                                if (fontFamilies.indexOf(fontFamily) == -1) {
+                                    fontFamilies.push(fontFamily);
+                                }
+                            });
+                        }
+                    });
+                    return fontFamilies;
+                }
+
+                return {
+                    cloneNode: cloneNode,
+                    fontFamilies: getFontFamily(node)
+                };
+            })
             .then(embedFonts)
             .then(inlineImages)
             .then(applyOptions)
@@ -275,13 +295,13 @@
         }
     }
 
-    function embedFonts(node) {
-        return fontFaces.resolveAll()
+    function embedFonts(nodeData) {
+        return fontFaces.resolveAll(nodeData.fontFamilies)
             .then(function (cssText) {
                 var styleNode = document.createElement('style');
-                node.appendChild(styleNode);
+                nodeData.cloneNode.appendChild(styleNode);
                 styleNode.appendChild(document.createTextNode(cssText));
-                return node;
+                return nodeData.cloneNode;
             });
     }
 
@@ -568,8 +588,8 @@
             }
         };
 
-        function resolveAll() {
-            return readAll(document)
+        function resolveAll(fontFamilies) {
+            return readAll(fontFamilies)
                 .then(function (webFonts) {
                     return Promise.all(
                         webFonts.map(function (webFont) {
@@ -582,7 +602,7 @@
                 });
         }
 
-        function readAll() {
+        function readAll(fontFamilies) {
             return Promise.resolve(util.asArray(document.styleSheets))
                 .then(getCssRules)
                 .then(selectWebFontRules)
@@ -597,6 +617,9 @@
                     })
                     .filter(function (rule) {
                         return inliner.shouldProcess(rule.style.getPropertyValue('src'));
+                    })
+                    .filter(function (rule) {
+                        return (fontFamilies.indexOf(rule.style.getPropertyValue('font-family')) != -1);
                     });
             }
 
