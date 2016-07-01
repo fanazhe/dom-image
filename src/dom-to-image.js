@@ -312,6 +312,7 @@
     }
 
     function newUtil() {
+        var urlCache = {};
         return {
             escape: escape,
             parseExtension: parseExtension,
@@ -427,7 +428,10 @@
         function getAndEncode(url) {
             var TIMEOUT = 30000;
 
-            return new Promise(function (resolve) {
+            if (urlCache.hasOwnProperty(url)) {
+                return urlCache[url];
+            }
+            urlCache[url] = new Promise(function (resolve) {
                 var request = new XMLHttpRequest();
 
                 request.onreadystatechange = done;
@@ -462,6 +466,7 @@
                     resolve('');
                 }
             });
+            return urlCache[url];
         }
 
         function dataAsUrl(content, type) {
